@@ -1,389 +1,253 @@
 package com.example.zoomparallax.CustomeViews
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
+
 import android.content.Context
+import android.support.v4.view.NestedScrollingParent
 import android.util.AttributeSet
-import android.util.DisplayMetrics
-import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.view.WindowManager
-import android.widget.FrameLayout
-import android.widget.ImageView
-import com.gavin.view.flexible.IFlexible
-import com.gavin.view.flexible.R
+import android.view.ViewConfiguration
+import android.view.animation.AlphaAnimation
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 
-import com.gavin.view.flexible.callback.OnPullListener
-import com.gavin.view.flexible.callback.OnReadyPullListener
-import com.gavin.view.flexible.callback.OnRefreshListener
-import com.gavin.view.flexible.util.PullAnimatorUtil
 
-/**
- * Created by gavin
- * date 2018/6/12
- * 带有下拉放大效果的FrameLayout
- */
-class FlexibleLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
-    FrameLayout(context, attrs, defStyleAttr),
-    IFlexible {
+open class FLexibleLayout @JvmOverloads constructor(
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+) : LinearLayout(context, attrs, defStyleAttr){
 
-    /**
-     * 是否允许下拉放大
-     */
-    private var isEnable = true
-
-    /**
-     * 是否允许下拉刷新
-     */
-    private var isRefreshable = false
-
-    /**
-     * 头部高度
-     */
-    private var mHeaderHeight = 0
-
-    /**
-     * 头部宽度
-     */
-    private var mHeaderWidth = 0
-
-    /**
-     * 头部size ready
-     */
-    private var mHeaderSizeReady: Boolean = false
-
-    /**
-     * 头部
-     */
-    private var mHeaderView: View? = null
-
-    /**
-     * 刷新
-     */
-    private var mRefreshView: View? = null
-
-    /**
-     * 刷新View的宽高
-     */
-    private var mRefreshSize = screenWidth / 15
-
-    /**
-     * 最大头部下拉高度
-     */
-    private var mMaxPullHeight = screenWidth / 3
-
-    /**
-     * 最大 刷新 下拉高度
-     */
-    private var mMaxRefreshPullHeight = screenWidth / 3
-
-    /**
-     * true 开始下拽
-     */
     private var mIsBeingDragged: Boolean = false
-
-    /**
-     * 标志：正在刷新
-     */
-    private var mIsRefreshing: Boolean = false
-
-    /**
-     * 准备下拉监听
-     */
-    private var mListener: OnReadyPullListener? = null
-
-    /**
-     * 刷新监听
-     */
-    private var mRefreshListener: OnRefreshListener? = null
-
-    /**
-     * 初始坐标
-     */
     private var mInitialY: Float = 0.toFloat()
     private var mInitialX: Float = 0.toFloat()
+    private lateinit var headerView : View
+    private var mHeaderHeight : Float = 0F
+    private var mHeaderWidth : Float = 0F
+    private var alreadyAdded : Int = 0
+    private var getTop : Int = 0
+    private var atTop : Int = 2
+    private var temp : Float = 0F
+    private var repeat_time : Int = 0
+    private var positionArray = FloatArray(1000)
+    private var direction : Int = 0  //0 is down, 1 is up
+    private var Return : Int = 0
+    private var isFirstMoveAfterIntercept : Boolean = true
+    private lateinit var fadingView : View
+    private lateinit var fadingHeightView : View
+    private lateinit var titleView : View
+    private var titleHeight : Float = 0f
+    private var oldY : Int = 0
+    private var fadingHeight : Int = 500
+    var threshold : Float = 0f
+    private lateinit var name_cenima : TextView
+    private lateinit var liste : Button
+    private var isFlinging = false
 
-    /**
-     * 下拉监听
-     */
-    private var mOnPullListener: OnPullListener? = null
 
-    /**
-     * 刷新动画消失监听
-     */
-    private val mRefreshAnimatorListener = RefreshAnimatorListener()
+//    1）public boolean dispatchTouchEvent(MotionEvent ev)  这个方法用来分发TouchEvent
+//    2）public boolean onInterceptTouchEvent(MotionEvent ev) 这个方法用来拦截TouchEvent
+//    3）public boolean onTouchEvent(MotionEvent ev) 这个方法用来处理TouchEvent
 
-    /**
-     * 获取屏幕宽度
-     *
-     * @return
-     */
-    private val screenWidth: Int
-        get() {
-            val mWindowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            val metrics = DisplayMetrics()
-            if (mWindowManager != null) {
-                mWindowManager.defaultDisplay.getMetrics(metrics)
-                return metrics.widthPixels
-            } else {
-                return 300
+
+    open fun setHeader(header : View,name:TextView,list:Button) {
+        headerView = header
+        name_cenima = name
+        liste = list
+        headerView.post {
+            run {
+                mHeaderHeight = headerView.height.toFloat()
+                mHeaderWidth = headerView.width.toFloat()
+                //System.out.println("the size of header is $mHeaderHeight * $mHeaderWidth")
+                //handleFling()
             }
         }
-
-    init {
-        init()
+    }
+    open fun setTitle(title:View){
+        this.titleView = title
+        titleView.post{
+            run{
+                titleHeight = titleView.height.toFloat()
+                titleView.alpha = 0f
+            }
+        }
+    }
+    open fun passSize(header: View):Float{
+        headerView = header
+        val location = IntArray(2)
+        headerView.getLocationInWindow(location)
+        val x = location[0]
+        val y = location[1]
+        return y.toFloat()
     }
 
-    private fun init() {
-        mIsRefreshing = false
-        mHeaderSizeReady = false
+    fun setFadingView(view:View){ this.fadingView = view }
+    fun setFadingHeightView(view: View){this.fadingHeightView = view}
+
+    private var i = 0
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        when(ev!!.action){
+            MotionEvent.ACTION_DOWN ->{
+                isFirstMoveAfterIntercept = true
+                headerView.scrollBy(0,0)
+            }
+            MotionEvent.ACTION_MOVE ->{
+                isFirstMoveAfterIntercept = true
+            }
+            MotionEvent.ACTION_UP,MotionEvent.ACTION_CANCEL ->{
+                isFirstMoveAfterIntercept = false
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+
     }
 
-    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        log("onInterceptTouchEvent")
-        if (isEnable && isHeaderReady && isReady) {
-            when (ev.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    log("onInterceptTouchEvent DOWN")
-                    mInitialX = ev.x
-                    mInitialY = ev.y
-                    mIsBeingDragged = false
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+        when(ev!!.action){
+            MotionEvent.ACTION_DOWN -> {
+                mInitialX = ev.x
+                mInitialY = ev.y
+                mIsBeingDragged = false
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                // NaN : not a Number
+                val diffX : Float = ev.x - mInitialX
+                val diffY : Float = ev.y - mInitialY
+                val location = IntArray(2)
+                headerView.getLocationInWindow(location)
+                val x = location[0]
+                val y = location[1]
+
+                if (alreadyAdded == 0){ getTop = runOneTime() }
+                if (diffY > 0 && y==getTop){
+                    direction = 1 // down
+                    if (atTop == 0){ temp = ev.y - mInitialY }
+                    mIsBeingDragged = true
+                    atTop = 1
+                    titleView.alpha = 0f
+                    return true
+                }else if (diffY > 0 && y != getTop){
+                    direction = 1 // down
+                    mIsBeingDragged = true
+                    atTop = 0
+                    isFirstMoveAfterIntercept = false
+                    threshold = headerView.y-getTop
+                    if (threshold<20&&threshold>0){ titleView.alpha = threshold/20 }
+                    if (threshold >= 20 ){ titleView.alpha = 1f }
+                    if (threshold <= 0 ){ titleView.alpha = 0f }
+                    //System.out.println(diffY)
                 }
-                MotionEvent.ACTION_MOVE -> {
-                    log("onInterceptTouchEvent MOVE")
-                    val diffY = ev.y - mInitialY
-                    val diffX = ev.x - mInitialX
-                    if (diffY > 0 && diffY / Math.abs(diffX) > 2) {
-                        mIsBeingDragged = true
-                        log("onInterceptTouchEvent return true")
-                        return true
-                    }
+                if (diffY < 0){
+                    direction = 0 // up
+                    isFirstMoveAfterIntercept = false
+                    threshold = headerView.y-getTop
+                    if (threshold>0&&threshold<20){ titleView.alpha = threshold/20 }
+                    if (threshold >= 20 ){ titleView.alpha = 1f }
+                    if (threshold <= 0 ){ titleView.alpha = 0f }
+//                    System.out.println(threshold)
+//                    System.out.println(titleView.alpha)
                 }
-                MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-                }
+            }
+            MotionEvent.ACTION_UP ->{
             }
         }
         return super.onInterceptTouchEvent(ev)
     }
 
-    override fun onTouchEvent(ev: MotionEvent): Boolean {
-        log("onTouchEvent")
-        if (isEnable && isHeaderReady && isReady) {
-            when (ev.action) {
-                MotionEvent.ACTION_MOVE -> if (mIsBeingDragged) {
-                    val diffY = ev.y - mInitialY
-                    changeHeader(diffY.toInt())
-                    changeRefreshView(diffY.toInt())
-                    if (mOnPullListener != null) {
-                        mOnPullListener!!.onPull(diffY.toInt())
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        when(event!!.action){
+            MotionEvent.ACTION_MOVE -> {
+                if (mIsBeingDragged){
+                    val diffY = event.y - mInitialY
+                    val location = IntArray(2)
+                    headerView.getLocationInWindow(location)
+                    val x = location[0]
+                    val y = location[1]
+                    if (atTop == 1){ changeHeader(diffY-temp) }
+                    if (headerView.layoutParams.width.toFloat() == mHeaderWidth){
+                        Return = 1
+                        if (isFirstMoveAfterIntercept){
+                            val ev = MotionEvent.obtain(event)
+                            ev.action = MotionEvent.ACTION_DOWN
+                            dispatchTouchEvent(ev)
+                            isFirstMoveAfterIntercept = false
+                        }
+                        dispatchTouchEvent(event)
+                        return false   // return to dispatchTouchEvent from here
                     }
-                    log("onTouchEvent return true")
-                    //return true;
+                    if (headerView.layoutParams.width.toFloat() != mHeaderWidth){
+                        Return = 0
+                        isFirstMoveAfterIntercept = true
+                    }
+
                 }
-                MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> if (mIsBeingDragged) {
+            }
+            MotionEvent.ACTION_UP ->{
+                if (mIsBeingDragged){
                     resetHeader()
-                    if (mOnPullListener != null) {
-                        mOnPullListener!!.onRelease()
-                    }
-                    //刷新操作
-                    val diffY = ev.y - mInitialY
-                    changeRefreshViewOnActionUp(diffY.toInt())
+                    //System.out.println("header back to top")
+                    temp = 0f
+                    i = 0
+                    Return = 0
                     return true
                 }
             }
         }
-        return super.onTouchEvent(ev)
+        return super.onTouchEvent(event)
     }
 
-    override fun isReady(): Boolean {
-        return mListener != null && mListener!!.isReady
+
+
+    fun changeHeader(offsetY : Float){
+        val pullOffset : Int = Math.pow(offsetY.toDouble(),0.8).toInt()
+        val newHeight : Float = pullOffset + mHeaderHeight
+        val newWidth : Float = (newHeight/mHeaderHeight)*mHeaderWidth
+        headerView.layoutParams.height = newHeight.toInt()
+        headerView.layoutParams.width = newWidth.toInt()
+        val margin : Float = (newWidth - mHeaderWidth)/2
+        headerView.translationX = -margin
+        headerView.requestLayout()
+//        val top = name_cenima.y
+//        name_cenima.y = top + offsetY
     }
 
-    override fun isHeaderReady(): Boolean {
-        return mHeaderView != null && mHeaderSizeReady
+    fun resetHeader(){
+        headerView.layoutParams.height = mHeaderHeight.toInt()
+        headerView.layoutParams.width = mHeaderWidth.toInt()
+        headerView.translationX = 0F  //view's moving distance
+        headerView.requestLayout()
     }
 
-    override fun changeHeader(offsetY: Int) {
-        PullAnimatorUtil.pullAnimator(mHeaderView, mHeaderHeight, mHeaderWidth, offsetY, mMaxPullHeight)
+
+
+    fun runOneTime():Int{
+        val location = IntArray(2)
+        headerView.getLocationInWindow(location)
+        val x = location[0]
+        val y = location[1]
+        alreadyAdded = 1
+        return y
     }
 
-    override fun resetHeader() {
-        PullAnimatorUtil.resetAnimator(mHeaderView, mHeaderHeight, mHeaderWidth)
+    fun handleFling(){
+        var mTouchSlop = ViewConfiguration.get(context).scaledTouchSlop
+        var mMaximumVelocity = ViewConfiguration.get(context).scaledMaximumFlingVelocity
+        var mMinimumVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity
+        System.out.println("$mMaximumVelocity+$mMinimumVelocity")
     }
 
-    override fun changeRefreshView(offsetY: Int) {
-        if (!isRefreshable || mRefreshView == null || isRefreshing) {
-            return
-        }
-        PullAnimatorUtil.pullRefreshAnimator(mRefreshView, offsetY, mRefreshSize, mMaxRefreshPullHeight)
-    }
-
-    override fun changeRefreshViewOnActionUp(offsetY: Int) {
-        if (!isRefreshable || mRefreshView == null || isRefreshing) {
-            return
-        }
-        mIsRefreshing = true
-        if (offsetY > mMaxRefreshPullHeight) {
-            PullAnimatorUtil.onRefreshing(mRefreshView!!)
-            if (mRefreshListener != null) {
-                mRefreshListener!!.onRefreshing()
+    fun handleRepeat(diffY:Float,direction:Int){
+        positionArray[i] = diffY
+        //System.out.println("position $i is ${positionArray[i]}")
+        System.out.println(direction)
+        i += 1
+        if (i>=1){
+            if (positionArray[i]>positionArray[i-1]){
+                //System.out.println(positionArray[i])
+            }else if (positionArray[i]<positionArray[i-1]){
+                //System.out.println(positionArray[i])
             }
-        } else {
-            PullAnimatorUtil.resetRefreshView(mRefreshView!!, mRefreshSize, mRefreshAnimatorListener)
-        }
-    }
-
-    override fun onRefreshComplete() {
-        if (!isRefreshable || mRefreshView == null) {
-            return
-        }
-        PullAnimatorUtil.resetRefreshView(mRefreshView!!, mRefreshSize, mRefreshAnimatorListener)
-    }
-
-
-    override fun isRefreshing(): Boolean {
-        return mIsRefreshing
-    }
-
-    /**
-     * 是否允许下拉放大
-     *
-     * @param isEnable
-     * @return
-     */
-    fun setEnable(isEnable: Boolean): FlexibleLayout {
-        this.isEnable = isEnable
-        return this
-    }
-
-    /**
-     * 是否允许下拉刷新
-     *
-     * @param isEnable
-     * @return
-     */
-    fun setRefreshable(isEnable: Boolean): FlexibleLayout {
-        this.isRefreshable = isEnable
-        return this
-    }
-
-    /**
-     * 设置头部
-     *
-     * @param header
-     * @return
-     */
-    fun setHeader(header: View): FlexibleLayout {
-        mHeaderView = header
-        mHeaderView!!.post {
-            mHeaderHeight = mHeaderView!!.height
-            mHeaderWidth = mHeaderView!!.width
-            mHeaderSizeReady = true
-        }
-        return this
-    }
-
-    /**
-     * Header最大下拉高度
-     *
-     * @param height
-     * @return
-     */
-    fun setMaxPullHeight(height: Int): FlexibleLayout {
-        mMaxPullHeight = height
-        return this
-    }
-
-    /**
-     * 刷新控件 最大下拉高度
-     *
-     * @param height
-     * @return
-     */
-    fun setMaxRefreshPullHeight(height: Int): FlexibleLayout {
-        mMaxRefreshPullHeight = height
-        return this
-    }
-
-    /**
-     * 设置刷新View的尺寸（正方形）
-     *
-     * @param size
-     * @return
-     */
-    fun setRefreshSize(size: Int): FlexibleLayout {
-        mRefreshSize = size
-        return this
-    }
-
-    /**
-     * 设置刷新View
-     *
-     * @param refreshView
-     * @param listener
-     * @return
-     */
-    fun setRefreshView(refreshView: View, listener: OnRefreshListener): FlexibleLayout {
-        if (mRefreshView != null) {
-            removeView(mRefreshView)
-        }
-        mRefreshView = refreshView
-        mRefreshListener = listener
-        val layoutParams = FrameLayout.LayoutParams(mRefreshSize, mRefreshSize)
-        layoutParams.gravity = Gravity.CENTER_HORIZONTAL
-        mRefreshView!!.layoutParams = layoutParams
-        mRefreshView!!.translationY = (-mRefreshSize).toFloat()
-        addView(mRefreshView)
-        return this
-    }
-
-    /**
-     * 设置默认的刷新头
-     *
-     * @param listener
-     * @return
-     */
-    fun setDefaultRefreshView(listener: OnRefreshListener): FlexibleLayout {
-        val refreshView = ImageView(context)
-        refreshView.setImageResource(R.drawable.flexible_loading)
-        return setRefreshView(refreshView, listener)
-    }
-
-    /**
-     * 监听 是否可以下拉放大
-     *
-     * @param listener
-     * @return
-     */
-    fun setReadyListener(listener: OnReadyPullListener): FlexibleLayout {
-        mListener = listener
-        return this
-    }
-
-    /**
-     * 设置下拉监听
-     *
-     * @param onPullListener
-     * @return
-     */
-    fun setOnPullListener(onPullListener: OnPullListener): FlexibleLayout {
-        mOnPullListener = onPullListener
-        return this
-    }
-
-    private fun log(str: String) {
-        //Log.i("FlexibleView", str);
-    }
-
-    internal inner class RefreshAnimatorListener : AnimatorListenerAdapter() {
-        override fun onAnimationEnd(animation: Animator) {
-            super.onAnimationEnd(animation)
-            mIsRefreshing = false
-        }
-
-        override fun onAnimationCancel(animation: Animator) {
-            super.onAnimationCancel(animation)
-            mIsRefreshing = false
         }
     }
 }

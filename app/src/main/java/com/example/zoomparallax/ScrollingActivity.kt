@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.support.annotation.Nullable
+import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CollapsingToolbarLayout
 import android.support.design.widget.CoordinatorLayout
 import android.support.v4.widget.NestedScrollView
@@ -16,21 +17,26 @@ import android.view.*
 import android.widget.*
 
 import com.example.zoomparallax.Adapters.RecyclerAdapter
+import com.example.zoomparallax.CustomeViews.CustomFlingScrollView
 
 
 import com.example.zoomparallax.CustomeViews.FLexibleLayout
 import kotlinx.android.synthetic.main.content_scrolling.*
 import org.w3c.dom.Text
 
+//CollapsingToolbarLayout: the folding header
+//AppbarLayout: to handle the Toolbar movements(Scrolling header gestures)
 
 open class ScrollingActivity : AppCompatActivity() {
 
     private lateinit var header : View
     private lateinit var mFLexibleLayout : FLexibleLayout
-    private lateinit var coordinatorLayout: CoordinatorLayout
-    private lateinit var nestedScrollView: NestedScrollView
     private lateinit var toolbar : android.support.v7.widget.Toolbar
     private lateinit var mCollapsingToolbarLayout: CollapsingToolbarLayout
+    private lateinit var appbatlayout : AppBarLayout
+    private lateinit var customFlingScrollView: CustomFlingScrollView
+    private lateinit var content : FrameLayout
+    private lateinit var header_btns : FrameLayout
     private lateinit var headerbarLayout : View
     private lateinit var btn_info : Button
     private lateinit var btn_add : Button
@@ -39,7 +45,6 @@ open class ScrollingActivity : AppCompatActivity() {
     private lateinit var title : TextView
     private lateinit var name_cinema : TextView
     private var Height : Float = 0f
-    //private lateinit var headerView : ShowActionBarView
 
 
     @SuppressLint("ObsoleteSdkInt")
@@ -71,21 +76,15 @@ open class ScrollingActivity : AppCompatActivity() {
         }
         initView()
 
-
-
-//        fab1.setOnClickListener { view ->
-//            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                .setAction("Action", null).show()
-//        }
-
         val manager = LinearLayoutManager(this)
         show1.layoutManager = LinearLayoutManager(this,OrientationHelper.HORIZONTAL,false)
         show1.adapter = RecyclerAdapter(photos,names)
         show2.layoutManager = LinearLayoutManager(this,OrientationHelper.HORIZONTAL,false)
         show2.adapter = RecyclerAdapter(photos,names)
 
-        mFLexibleLayout.setHeader(header,name_cinema,btn_list)
+        mFLexibleLayout.setHeader(header)
         mFLexibleLayout.setTitle(title)
+        mFLexibleLayout.setContent(content,header_btns)
 
 
         btn_play.setOnClickListener { System.out.println("play") }
@@ -97,23 +96,33 @@ open class ScrollingActivity : AppCompatActivity() {
         System.out.println("header height now is : ${mesureHeight(header)},need to show title")
         //getScrollChange(header)
 
+
+
+
+
 //----------------------------------  postDelayed(Runnable,long)  --------------------------------------
 
-//        val handler = Handler()
-//        val runnable: Runnable = object : Runnable {
-//            override fun run() {
-//
-//                if (header.y-Height>0){
-//                    //System.out.println("------------------")
-//                    if (header.y - Height < 10){
-//                        //System.out.println("xxxxxxxxxxxxxxxxxx")
-//                        title.alpha = 0f
-//                    }
-//                }
-//                handler.postDelayed(this, 1)
-//            }
-//        }
-//        handler.postDelayed(runnable,1)
+        val handler = Handler()
+        val runnable: Runnable = object : Runnable {
+            override fun run() {
+
+                if (header.y-Height>0){
+                    if (header.y - Height < 200){
+                        System.out.println("${header.y - Height}")
+                        title.alpha = (header.y)/200
+                    }
+                    if (header.y - Height > 200){
+                        title.alpha = 1f
+                    }
+
+                }
+                if (header.y-Height == 0f){
+                    title.alpha = 0f
+                }
+                handler.postDelayed(this, 1)
+            }
+        }
+        handler.postDelayed(runnable,1)
 //----------------------------------  postDelayed(Runnable,long)  --------------------------------------
 
 
@@ -123,8 +132,11 @@ open class ScrollingActivity : AppCompatActivity() {
     fun initView (){
         mFLexibleLayout = findViewById(R.id.fv)
         header = findViewById(R.id.iv)
-        coordinatorLayout = findViewById(R.id.coor_layout)
-        nestedScrollView = findViewById(R.id.nestedView)
+        //coordinatorLayout = findViewById(R.id.coor_layout)
+        appbatlayout = findViewById(R.id.appbarlayout)
+        header_btns = findViewById(R.id.header_btns)
+        customFlingScrollView = findViewById(R.id.nestedview)
+        content = findViewById(R.id.content)
         toolbar = findViewById(R.id.toolbar)
         mCollapsingToolbarLayout = findViewById(R.id.collapsing_layout)
         name_cinema = findViewById(R.id.name_cinema)
@@ -134,11 +146,6 @@ open class ScrollingActivity : AppCompatActivity() {
         btn_list = findViewById(R.id.list)
         title = findViewById(R.id.title)
         setSupportActionBar(toolbar)
-//        headerbarLayout = findViewById(R.id.nac_layout)
-//        headerbarLayout.alpha = 0f
-//        headerView = findViewById(R.id.headerView)
-//        headerView.setFadingView(headerbarLayout)
-//        headerView.setFadingHeightView(header)
 
         btn_list.background.alpha = 100
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)

@@ -1,64 +1,71 @@
 package com.example.zoomparallax.CustomeViews
 
 import android.content.Context
+import android.support.design.widget.CoordinatorLayout
 import android.support.v4.view.NestedScrollingParent
 import android.util.AttributeSet
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewConfiguration
+import android.view.*
 import android.view.animation.AlphaAnimation
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
+import android.widget.*
+import android.view.ViewGroup
+import android.support.v4.view.VelocityTrackerCompat.getYVelocity
+import android.view.VelocityTracker
+
+
+
 
 
 open class FLexibleLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : LinearLayout(context, attrs, defStyleAttr){
+) : LinearLayout(context, attrs, defStyleAttr) {
 
     private var mIsBeingDragged: Boolean = false
     private var mInitialY: Float = 0.toFloat()
     private var mInitialX: Float = 0.toFloat()
     private lateinit var headerView : View
+    private lateinit var content : View
+    private lateinit var header_btns : FrameLayout
     private var mHeaderHeight : Float = 0F
     private var mHeaderWidth : Float = 0F
     private var alreadyAdded : Int = 0
     private var getTop : Int = 0
     private var atTop : Int = 2
     private var temp : Float = 0F
-    private var repeat_time : Int = 0
-    private var positionArray = FloatArray(1000)
     private var direction : Int = 0  //0 is down, 1 is up
     private var Return : Int = 0
     private var isFirstMoveAfterIntercept : Boolean = true
-    private lateinit var fadingView : View
-    private lateinit var fadingHeightView : View
     private lateinit var titleView : View
     private var titleHeight : Float = 0f
-    private var oldY : Int = 0
-    private var fadingHeight : Int = 500
-    var threshold : Float = 0f
-    private lateinit var name_cenima : TextView
-    private lateinit var liste : Button
-    private var isFlinging = false
+    private val velocityTracker = VelocityTracker.obtain()
+    private val speed = ArrayList<Float>()
+    private val scroller = Scroller(context)
+    val minV = ViewConfiguration.get(context).scaledMinimumFlingVelocity
+    val maxV = ViewConfiguration.get(context).scaledMaximumFlingVelocity
 
-
-//    1）public boolean dispatchTouchEvent(MotionEvent ev)  这个方法用来分发TouchEvent
-//    2）public boolean onInterceptTouchEvent(MotionEvent ev) 这个方法用来拦截TouchEvent
-//    3）public boolean onTouchEvent(MotionEvent ev) 这个方法用来处理TouchEvent
-
-
-    open fun setHeader(header : View,name:TextView,list:Button) {
+    open fun setHeader(header : View) {
         headerView = header
-        name_cenima = name
-        liste = list
         headerView.post {
             run {
                 mHeaderHeight = headerView.height.toFloat()
                 mHeaderWidth = headerView.width.toFloat()
-                //System.out.println("the size of header is $mHeaderHeight * $mHeaderWidth")
-                //handleFling()
+
+//                System.out.println("min fling velocity is $minV") //175
+//                System.out.println("max fling velocity is $maxV") //28000
+            }
+        }
+    }
+    open fun setContent(content:View, header_btns:FrameLayout){
+        this.content = content
+        this.header_btns = header_btns
+        content.post {
+            run{
+                val top = content.paddingTop
+                System.out.println("padding top is $top")
+            }
+        }
+        header_btns.post {
+            run{
+                System.out.println("header wigets")
             }
         }
     }
@@ -67,35 +74,32 @@ open class FLexibleLayout @JvmOverloads constructor(
         titleView.post{
             run{
                 titleHeight = titleView.height.toFloat()
-                titleView.alpha = 0f
+                //titleView.alpha = 0f
             }
         }
     }
-    open fun passSize(header: View):Float{
-        headerView = header
-        val location = IntArray(2)
-        headerView.getLocationInWindow(location)
-        val x = location[0]
-        val y = location[1]
-        return y.toFloat()
-    }
-
-    fun setFadingView(view:View){ this.fadingView = view }
-    fun setFadingHeightView(view: View){this.fadingHeightView = view}
-
     private var i = 0
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         when(ev!!.action){
             MotionEvent.ACTION_DOWN ->{
                 isFirstMoveAfterIntercept = true
-                headerView.scrollBy(0,0)
+                System.out.println("dispatchTouchEvent--ACTION_DOWN")
+
             }
             MotionEvent.ACTION_MOVE ->{
+                velocityTracker.addMovement(ev)
+                velocityTracker.computeCurrentVelocity(1)
+                System.out.println("speed is ${velocityTracker.yVelocity}")
+                speed.add(velocityTracker.yVelocity)
+
                 isFirstMoveAfterIntercept = true
+                System.out.println("dispatchTouchEvent--ACTION_MOVE")
             }
             MotionEvent.ACTION_UP,MotionEvent.ACTION_CANCEL ->{
                 isFirstMoveAfterIntercept = false
+
+                System.out.println("dispatchTouchEvent--ACTION_UP")
             }
         }
         return super.dispatchTouchEvent(ev)
@@ -108,9 +112,12 @@ open class FLexibleLayout @JvmOverloads constructor(
                 mInitialX = ev.x
                 mInitialY = ev.y
                 mIsBeingDragged = false
+                System.out.println("onInterceptTouchEvent--ACTION_DOWN")
+
             }
 
             MotionEvent.ACTION_MOVE -> {
+
                 // NaN : not a Number
                 val diffX : Float = ev.x - mInitialX
                 val diffY : Float = ev.y - mInitialY
@@ -118,38 +125,32 @@ open class FLexibleLayout @JvmOverloads constructor(
                 headerView.getLocationInWindow(location)
                 val x = location[0]
                 val y = location[1]
-
+                System.out.println("onInterceptTouchEvent--ACTION_MOVE")
                 if (alreadyAdded == 0){ getTop = runOneTime() }
-                if (diffY > 0 && y==getTop){
+                if (diffY > 0 && y==getTop && (diffY>2*diffX)){
                     direction = 1 // down
                     if (atTop == 0){ temp = ev.y - mInitialY }
                     mIsBeingDragged = true
                     atTop = 1
-                    titleView.alpha = 0f
+                    //titleView.alpha = 0f
                     return true
                 }else if (diffY > 0 && y != getTop){
                     direction = 1 // down
                     mIsBeingDragged = true
                     atTop = 0
                     isFirstMoveAfterIntercept = false
-                    threshold = headerView.y-getTop
-                    if (threshold<20&&threshold>0){ titleView.alpha = threshold/20 }
-                    if (threshold >= 20 ){ titleView.alpha = 1f }
-                    if (threshold <= 0 ){ titleView.alpha = 0f }
-                    //System.out.println(diffY)
                 }
                 if (diffY < 0){
                     direction = 0 // up
                     isFirstMoveAfterIntercept = false
-                    threshold = headerView.y-getTop
-                    if (threshold>0&&threshold<20){ titleView.alpha = threshold/20 }
-                    if (threshold >= 20 ){ titleView.alpha = 1f }
-                    if (threshold <= 0 ){ titleView.alpha = 0f }
-//                    System.out.println(threshold)
-//                    System.out.println(titleView.alpha)
+
                 }
             }
             MotionEvent.ACTION_UP ->{
+                if (speed.size < 10){
+                    System.out.println("quick touch")
+                }
+                System.out.println("onInterceptTouchEvent--ACTION_UP")
             }
         }
         return super.onInterceptTouchEvent(ev)
@@ -158,13 +159,18 @@ open class FLexibleLayout @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when(event!!.action){
             MotionEvent.ACTION_MOVE -> {
+
                 if (mIsBeingDragged){
                     val diffY = event.y - mInitialY
                     val location = IntArray(2)
                     headerView.getLocationInWindow(location)
                     val x = location[0]
                     val y = location[1]
-                    if (atTop == 1){ changeHeader(diffY-temp) }
+                    if (atTop == 1){
+                        changeHeader(diffY-temp)
+
+
+                    }
                     if (headerView.layoutParams.width.toFloat() == mHeaderWidth){
                         Return = 1
                         if (isFirstMoveAfterIntercept){
@@ -182,19 +188,29 @@ open class FLexibleLayout @JvmOverloads constructor(
                     }
 
                 }
+                System.out.println("onTouchEvent--ACTION_MOVE")
+
             }
             MotionEvent.ACTION_UP ->{
+                System.out.println("onTouchEvent--ACTION_UP")
                 if (mIsBeingDragged){
                     resetHeader()
                     //System.out.println("header back to top")
                     temp = 0f
                     i = 0
                     Return = 0
+
+                    speed.clear()
                     return true
                 }
             }
         }
         return super.onTouchEvent(event)
+    }
+
+    override fun onNestedFling(target: View, velocityX: Float, velocityY: Float, consumed: Boolean): Boolean {
+
+        return true
     }
 
 
@@ -208,8 +224,15 @@ open class FLexibleLayout @JvmOverloads constructor(
         val margin : Float = (newWidth - mHeaderWidth)/2
         headerView.translationX = -margin
         headerView.requestLayout()
-//        val top = name_cenima.y
-//        name_cenima.y = top + offsetY
+
+        //content.scrollBy(0,-pullOffset/20)
+        content.setPadding(0,headerView.height,0,0)
+        header_btns.setPadding(0,pullOffset,0,0)
+
+    }
+
+    override fun dispatchNestedFling(velocityX: Float, velocityY: Float, consumed: Boolean): Boolean {
+        return true
     }
 
     fun resetHeader(){
@@ -217,6 +240,9 @@ open class FLexibleLayout @JvmOverloads constructor(
         headerView.layoutParams.width = mHeaderWidth.toInt()
         headerView.translationX = 0F  //view's moving distance
         headerView.requestLayout()
+        //content.scrollTo(0,0)
+        content.setPadding(0,1500,0,0)
+        header_btns.setPadding(0,0,0,0)
     }
 
 
@@ -230,24 +256,5 @@ open class FLexibleLayout @JvmOverloads constructor(
         return y
     }
 
-    fun handleFling(){
-        var mTouchSlop = ViewConfiguration.get(context).scaledTouchSlop
-        var mMaximumVelocity = ViewConfiguration.get(context).scaledMaximumFlingVelocity
-        var mMinimumVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity
-        System.out.println("$mMaximumVelocity+$mMinimumVelocity")
-    }
 
-    fun handleRepeat(diffY:Float,direction:Int){
-        positionArray[i] = diffY
-        //System.out.println("position $i is ${positionArray[i]}")
-        System.out.println(direction)
-        i += 1
-        if (i>=1){
-            if (positionArray[i]>positionArray[i-1]){
-                //System.out.println(positionArray[i])
-            }else if (positionArray[i]<positionArray[i-1]){
-                //System.out.println(positionArray[i])
-            }
-        }
-    }
 }

@@ -126,7 +126,9 @@ open class FLexibleLayout @JvmOverloads constructor(
                 val x = location[0]
                 val y = location[1]
                 System.out.println("onInterceptTouchEvent--ACTION_MOVE")
+
                 if (alreadyAdded == 0){ getTop = runOneTime() }
+
                 if (diffY > 0 && y==getTop && (diffY>2*diffX)){
                     direction = 1 // down
                     if (atTop == 0){ temp = ev.y - mInitialY }
@@ -140,6 +142,7 @@ open class FLexibleLayout @JvmOverloads constructor(
                     atTop = 0
                     isFirstMoveAfterIntercept = false
                 }
+
                 if (diffY < 0){
                     direction = 0 // up
                     isFirstMoveAfterIntercept = false

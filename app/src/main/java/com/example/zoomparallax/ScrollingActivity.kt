@@ -108,7 +108,7 @@ open class ScrollingActivity : AppCompatActivity() {
 
                 if (header.y-Height>0){
                     if (header.y - Height < 200){
-                        System.out.println("${header.y - Height}")
+                        //System.out.println("${header.y - Height}")
                         title.alpha = (header.y)/200
                     }
                     if (header.y - Height > 200){

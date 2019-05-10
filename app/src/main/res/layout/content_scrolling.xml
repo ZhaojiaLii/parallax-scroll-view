@@ -74,11 +74,7 @@
                 android:textSize="20dp"
                 android:textAllCaps="false"
         />
-        <FrameLayout android:layout_width="match_parent"
-                     android:layout_height="500dp"
-        android:background="#000000">
 
-        </FrameLayout>
 
 
     </LinearLayout>

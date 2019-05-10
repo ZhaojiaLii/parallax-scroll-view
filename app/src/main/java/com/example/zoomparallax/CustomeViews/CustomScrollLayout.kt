@@ -78,6 +78,12 @@ open class FLexibleLayout @JvmOverloads constructor(
             }
         }
     }
+
+
+    override fun onNestedPreFling(target: View?, velocityX: Float, velocityY: Float): Boolean {
+        return super.onNestedPreFling(target, velocityX, velocityY)
+    }
+
     private var i = 0
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {

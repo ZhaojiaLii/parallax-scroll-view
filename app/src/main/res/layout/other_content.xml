@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="#000"
+              app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+    android:orientation="vertical">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                  android:text="A la une"
+                  android:textColor="#fff"
+                  android:textSize="30dp"/>
+        <View android:layout_width="match_parent" android:layout_height="50dp"/>
+
+        <ImageView android:layout_width="match_parent" android:layout_height="200dp"
+                     android:padding="15dp"
+        android:src="@drawable/zero"
+        android:scaleType="centerCrop"/>
+        <View android:layout_width="match_parent" android:layout_height="50dp"/>
+
+
+        <!--<ImageView android:layout_width="match_parent" android:layout_height="200dp"-->
+                     <!--android:padding="15dp"-->
+                     <!--android:src="@drawable/astarisborn"-->
+                     <!--android:scaleType="centerCrop"/>-->
+        <!--<View android:layout_width="match_parent" android:layout_height="50dp"/>-->
+        <!--&lt;!&ndash;<ImageView android:layout_width="match_parent" android:layout_height="200dp"&ndash;&gt;-->
+                     <!--&lt;!&ndash;android:padding="15dp"&ndash;&gt;-->
+                     <!--&lt;!&ndash;android:src="@drawable/zero"&ndash;&gt;-->
+                     <!--&lt;!&ndash;android:scaleType="centerCrop"/>&ndash;&gt;-->
+        <!--&lt;!&ndash;<View android:layout_width="match_parent" android:layout_height="10dp"/>&ndash;&gt;-->
+        <!--<ImageView android:layout_width="match_parent" android:layout_height="200dp"-->
+                     <!--android:padding="15dp"-->
+                     <!--android:src="@drawable/aladerive"-->
+                     <!--android:scaleType="centerCrop"/>-->
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="fin de layout"
+        android:textColor="#fff"/>
+        <View android:layout_width="match_parent" android:layout_height="300dp"
+        android:background="#000"/>
+
+
+    </LinearLayout>
+
+
+
+
+</android.support.v4.widget.NestedScrollView>

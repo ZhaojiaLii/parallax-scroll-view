@@ -117,7 +117,7 @@ open class ScrollingActivity : AppCompatActivity() {
             override fun run() {
                 if (status){
                     titlebackup.alpha = 1f
-                    System.out.println("alpha: ${title.alpha}")
+
                 }else if (percent<1f){
                     titlebackup.alpha = 0f
                 }
@@ -140,8 +140,8 @@ open class ScrollingActivity : AppCompatActivity() {
 
         val titleheight : Int = title.layoutParams.height
         val content_paddingTop = behavior_content.paddingTop
-        System.out.println("the title height is: ${getdp(titleheight.toFloat())}")
-        System.out.println("the status_bar height is: ${getdp(getStatusBarHeight())}")
+//        System.out.println("the title height is: ${getdp(titleheight.toFloat())}")
+//        System.out.println("the status_bar height is: ${getdp(getStatusBarHeight())}")
         title.layoutParams.height = (titleheight+getStatusBarHeight()).toInt()
         titlebackup.layoutParams.height = (titleheight+getStatusBarHeight()).toInt()
         behavior_content.setPadding(0, (content_paddingTop + getStatusBarHeight()).toInt(),0,0)

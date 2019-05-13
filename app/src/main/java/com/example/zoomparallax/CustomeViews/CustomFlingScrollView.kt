@@ -1,6 +1,8 @@
 package com.example.zoomparallax.CustomeViews
 
 import android.content.Context
+import android.os.Build
+import android.support.annotation.RequiresApi
 import android.support.v4.widget.NestedScrollView
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -15,12 +17,15 @@ open class CustomFlingScrollView @JvmOverloads constructor(
     private var dragY = 0f
 
 
+
+
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         parent.requestDisallowInterceptTouchEvent(true)
         when(ev!!.action){
             MotionEvent.ACTION_DOWN -> {
                 initX = ev.x
                 initY = ev.y
+                this.requestFocus()
             }
             MotionEvent.ACTION_MOVE -> {
                 //requestDisallowInterceptTouchEvent(true)
@@ -64,19 +69,6 @@ open class CustomFlingScrollView @JvmOverloads constructor(
                 dragX = ev.x - initX
                 dragY = ev.y - initY
                 System.out.println("$dragY")
-
-                if (dragY > 0){
-                    System.out.println("from recyclerview drag > 0")
-                    System.out.println("下拉需要放大")
-                    //parent.requestDisallowInterceptTouchEvent(true)
-
-                }
-                if (dragY < 0){
-                    System.out.println("from recyclerview drag < 0")
-                    System.out.println("上拉不用拦截")
-                    //parent.requestDisallowInterceptTouchEvent(true)
-
-                }
 
                 System.out.println("ParentView----onTouchEvent----MotionEvent.ACTION_MOVE")
             }

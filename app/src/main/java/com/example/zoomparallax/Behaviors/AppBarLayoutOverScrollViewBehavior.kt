@@ -3,16 +3,23 @@ package com.example.zoomparallax.Behaviors
 import android.content.Context
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CoordinatorLayout
+import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
 import java.lang.reflect.Field
 import android.view.MotionEvent
+import android.view.VelocityTracker
+import android.widget.Scroller
+import android.widget.Toast
 import com.example.zoomparallax.CustomeViews.DisInterceptNestedScrollView
+import kotlin.math.abs
+import kotlin.coroutines.coroutineContext as coroutineContext1
 
 
-class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: AttributeSet?) :
+open class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: AttributeSet?) :
     AppBarLayout.Behavior(context, attrs) {
     private val TAG = "overScroll"
     private val TAG_TOOLBAR = "toolbar"
@@ -55,12 +62,10 @@ class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: AttributeSet?
             System.out.println("$contentView")
         }
 
-
         if (mTargetView == null) {
             mTargetView = abl.findViewWithTag(TAG)
             if (mTargetView != null) {
                 init(abl)
-                System.out.println("init finished")
             }
         }
 
@@ -73,64 +78,20 @@ class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: AttributeSet?
     }
 
     override fun onInterceptTouchEvent(parent: CoordinatorLayout, child: AppBarLayout, ev: MotionEvent): Boolean {
+
+
         shouldBlockNestedScroll = false
 
         if (isFlinging) {
             shouldBlockNestedScroll = true
+            System.out.println("intercepted")
         }
-
-//        when (ev.actionMasked) {
-//            MotionEvent.ACTION_DOWN -> stopAppbarLayoutFling(child)  //手指触摸屏幕的时候停止fling事件
-//        }
-
         return super.onInterceptTouchEvent(parent, child, ev)
     }
 
-//    @Throws(NoSuchFieldException::class)
-//    private fun getFlingRunnableField(): Field {
-//        val headerBehaviorType = this.javaClass.superclass!!.superclass!!.superclass
-//        headerBehaviorType!!.getDeclaredField("flingRunnable")
-//        return headerBehaviorType.getDeclaredField("flingRunnable")
-//
-//
-//    }
-//
-//    @Throws(NoSuchFieldException::class)
-//    private fun getScrollerField(): Field {
-//        val headerBehaviorType = this.javaClass.superclass!!.superclass!!.superclass
-//        headerBehaviorType!!.getDeclaredField("scroller")
-//        return headerBehaviorType.getDeclaredField("scroller")
-//    }
-//
-//    private fun stopAppbarLayoutFling(appBarLayout: AppBarLayout) {
-//        //通过反射拿到HeaderBehavior中的flingRunnable变量
-//        try {
-//            val flingRunnableField = getFlingRunnableField()
-//            val scrollerField = getScrollerField()
-//            flingRunnableField.isAccessible = true
-//            scrollerField.isAccessible = true
-////            val flingRunnable : Runnable = flingRunnableField.get(this) as Runnable
-////            val overScroller : OverScroller = scrollerField.get(this) as OverScroller
-////            if (flingRunnable!=null){
-////                appBarLayout.removeCallbacks(flingRunnable)
-////                flingRunnableField.set(this,null)
-////            }
-////
-////            if (!overScroller.isFinished) {
-////                overScroller.abortAnimation()
-////            }
-//        } catch (e: NoSuchFieldException) {
-//            e.printStackTrace()
-//        } catch (e: IllegalAccessException) {
-//            e.printStackTrace()
-//        }
-//
-//    }
 
 
-
-
-    //开始嵌套滚动
+    //start nested scroll
     override fun onStartNestedScroll(
         parent: CoordinatorLayout,
         child: AppBarLayout,
@@ -145,51 +106,6 @@ class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: AttributeSet?
             System.out.println("target is Linearlayout")
             return true }
         return super.onStartNestedScroll(parent, child, directTargetChild, target, nestedScrollAxes, type)
-    }
-
-    //嵌套滚动的过程中
-    override fun onNestedScroll(
-        coordinatorLayout: CoordinatorLayout,
-        child: AppBarLayout,
-        target: View,
-        dxConsumed: Int,
-        dyConsumed: Int,
-        dxUnconsumed: Int,
-        dyUnconsumed: Int,
-        type: Int
-    ) {
-        if (!shouldBlockNestedScroll) {
-            super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
-        }
-    }
-
-    //快速的划动中
-    /**
-     * 当嵌套滚动的子View快速滚动时调用
-     *
-     * @param coordinatorLayout 父布局CoordinatorLayout
-     * @param child 使用此Behavior的AppBarLayout
-     * @param target 发起嵌套滚动的目标View(即AppBarLayout下面的ScrollView或RecyclerView)
-     * @param velocityX 水平方向的速度
-     * @param velocityY 垂直方向的速度
-     * @param consumed 如果嵌套的子View消耗了快速滚动则为true
-     * @return 如果Behavior消耗了快速滚动返回true
-     */
-    override fun onNestedFling(
-        coordinatorLayout: CoordinatorLayout,
-        child: AppBarLayout,
-        target: View,
-        velocityX: Float,
-        velocityY: Float,
-        consumed: Boolean
-    ): Boolean {
-        System.out.println("v is : $velocityY")
-        if (velocityY>10000){
-            return super.onNestedFling(coordinatorLayout, child, target, velocityX, velocityY, consumed)
-        }else{
-            return true
-        }
-
     }
 
     //即将开始嵌套滚动，每次滑动前，Child 先询问 Parent 是否需要滑动，即dispatchNestedPreScroll()，这就回调到 Parent 的onNestedPreScroll()
@@ -213,7 +129,7 @@ class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: AttributeSet?
                     return
                 }
                 if (mTargetView!=null && (child.bottom < mParentHeight)){
-                    System.out.println("dragging!!!!")
+//                    System.out.println("dragging!!!!")
 
                 }
             }
@@ -224,6 +140,28 @@ class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: AttributeSet?
 
 
 
+    //嵌套滚动的过程中
+    override fun onNestedScroll(
+        coordinatorLayout: CoordinatorLayout,
+        child: AppBarLayout,
+        target: View,
+        dxConsumed: Int,
+        dyConsumed: Int,
+        dxUnconsumed: Int,
+        dyUnconsumed: Int,
+        type: Int
+    ) {
+        if (type == TYPE_FLING){
+            isFlinging = true
+
+        }
+        if (!shouldBlockNestedScroll) {
+            System.out.println("嵌套滚动的过程中")
+            super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, type);
+        }
+    }
+
+
     //即将开始快速划动，这里可以做一些对动画的缓冲处理，也就是我们如何去应对用户快速的操作
     override fun onNestedPreFling(
         coordinatorLayout: CoordinatorLayout,
@@ -232,25 +170,78 @@ class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: AttributeSet?
         velocityX: Float,
         velocityY: Float
     ): Boolean {
-        if (velocityY>100){isAnimate = false }
-        return super.onNestedPreFling(coordinatorLayout, child, target, velocityX, velocityY)
+//        if (abs(velocityY)>5000){
+//            isAnimate = false
+//            //System.out.println("v is pre : $velocityY")
+//            isFlinging = true
+//            return super.onNestedPreFling(coordinatorLayout, child, target, velocityX, velocityY)
+//        }else{
+//            return false
+//        }
+
+        return if (abs(velocityY)>100){
+            System.out.println("v is : $velocityY, start fling.")
+
+            super.onNestedPreFling(coordinatorLayout, child, target, velocityX, velocityY)
+        }else{
+            true
+        }
     }
+
+    //快速的划动中
+    /**
+     * 当嵌套滚动的子View快速滚动时调用
+     *
+     * @param coordinatorLayout 父布局CoordinatorLayout
+     * @param child 使用此Behavior的AppBarLayout
+     * @param target 发起嵌套滚动的目标View(即AppBarLayout下面的ScrollView或RecyclerView)
+     * @param velocityX 水平方向的速度
+     * @param velocityY 垂直方向的速度
+     * @param consumed 如果嵌套的子View消耗了快速滚动则为true
+     * @return 如果Behavior消耗了快速滚动返回true
+     */
+    override fun onNestedFling(
+        coordinatorLayout: CoordinatorLayout,
+        child: AppBarLayout,
+        target: View,
+        velocityX: Float,
+        velocityY: Float,
+        consumed: Boolean
+    ): Boolean {
+//        if (abs(velocityY)<5000){
+//            isAnimate = false
+//            System.out.println("v is pre : $velocityY")
+//            isFlinging = true
+//            return false
+//        }else{
+//            return super.onNestedFling(coordinatorLayout, child, target, velocityX, velocityY, consumed)
+//        }
+        System.out.println("$velocityY")
+        return super.onNestedFling(coordinatorLayout, child, target, velocityX, velocityY, consumed)
+
+    }
+
 
     override fun onStopNestedScroll(coordinatorLayout: CoordinatorLayout, abl: AppBarLayout, target: View, type: Int) {
 
         recovery(abl)
         isFlinging = false
         shouldBlockNestedScroll = false
+        System.out.println("v is 0 and stopped")
+
         super.onStopNestedScroll(coordinatorLayout, abl, target, type)
     }
+
+
+
 
 
     fun init(appBarLayout: AppBarLayout){
         appBarLayout.clipChildren = false  //child view can out of range of parent view or not (true:cannot, false:can)
         mParentHeight = appBarLayout.height
         mTargetViewHeight = mTargetView!!.height
-        System.out.println("parent appbar layout height: $mParentHeight")
-        System.out.println("target view header image height: $mTargetViewHeight")
+//        System.out.println("parent appbar layout height: $mParentHeight")
+//        System.out.println("target view header image height: $mTargetViewHeight")
     }
 
     fun scale(appBarLayout: AppBarLayout,target: View,dy: Int){
@@ -271,8 +262,8 @@ class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: AttributeSet?
         headercontentView!!.bottom = mLastBottom
 
         target.scrollY = 0
-        System.out.println("top of content is: ${contentView!!.top}")
-        System.out.println("bottom of header is: ${mTargetView!!.bottom}")
+//        System.out.println("top of content is: ${contentView!!.top}")
+//        System.out.println("bottom of header is: ${mTargetView!!.bottom}")
 
     }
 

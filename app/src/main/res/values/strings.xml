@@ -95,4 +95,8 @@
         "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
         "when a user tries to pick up one of cards.\n\n"
     </string>
+    <string name="james">James Bond est un personnage de fiction créé par le romancier Ian Fleming en 1953. Bond est un
+        agent secret britannique travaillant pour le MI6. Il a été promu dans la section 00. Peu après, son nom de code
+        est devenu 007.
+    </string>
 </resources>

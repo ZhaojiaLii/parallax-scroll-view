@@ -39,7 +39,7 @@ android:orientation="vertical">
 
                 <include layout="@layout/behaviorcontent"/>
 
-
+                <include layout="@layout/behaviorlistcontent"/>
 
 
                 <android.support.v7.widget.Toolbar
@@ -51,6 +51,8 @@ android:orientation="vertical">
                         android:layout_height="65dp"
                         app:layout_collapseMode="pin"
                         app:popupTheme="@style/Widget.AppCompat.Toolbar"/>
+
+
 
 
 
@@ -74,9 +76,9 @@ android:orientation="vertical">
                       android:gravity="center"/>
         </LinearLayout>
 
-        <include layout="@layout/behaviorlistcontent"/>
 
-        <!--<include layout="@layout/other_content"/>-->
+
+        <include layout="@layout/other_content"/>
 
     </android.support.design.widget.CoordinatorLayout>
 

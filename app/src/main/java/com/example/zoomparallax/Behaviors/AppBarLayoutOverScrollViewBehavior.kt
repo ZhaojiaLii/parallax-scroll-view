@@ -17,6 +17,9 @@ import android.widget.Toast
 import com.example.zoomparallax.CustomeViews.DisInterceptNestedScrollView
 import kotlin.math.abs
 import kotlin.coroutines.coroutineContext as coroutineContext1
+import android.widget.OverScroller
+
+
 
 
 open class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: AttributeSet?) :
@@ -86,9 +89,65 @@ open class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: Attribut
             shouldBlockNestedScroll = true
             System.out.println("intercepted")
         }
+
+        when(ev.action){
+            MotionEvent.ACTION_DOWN ->{stopAppbarLayoutFling(child)}
+        }
         return super.onInterceptTouchEvent(parent, child, ev)
     }
 
+
+    private fun stopAppbarLayoutFling(appBarLayout: AppBarLayout) {
+        //通过反射拿到HeaderBehavior中的flingRunnable变量
+        try {
+            val headerBehaviorType = this.javaClass.superclass!!.superclass
+            val flingRunnableField = headerBehaviorType!!.getDeclaredField("mFlingRunnable")
+            val scrollerField = headerBehaviorType.getDeclaredField("mScroller")
+            flingRunnableField.isAccessible = true
+            scrollerField.isAccessible = true
+
+            val flingRunnable = flingRunnableField.get(this) as Runnable
+            val overScroller = scrollerField.get(this) as OverScroller
+            if (flingRunnable != null) {
+                appBarLayout.removeCallbacks(flingRunnable)
+                flingRunnableField.set(this, null)
+            }
+            if (overScroller != null && !overScroller.isFinished) {
+                overScroller.abortAnimation()
+            }
+        } catch (e: NoSuchFieldException) {
+            e.printStackTrace()
+        } catch (e: IllegalAccessException) {
+            e.printStackTrace()
+        }
+
+    }
+
+    private fun stopCoordinatorLayoutFling(coordinatorLayout: CoordinatorLayout) {
+        //通过反射拿到HeaderBehavior中的flingRunnable变量
+        try {
+            val headerBehaviorType = this.javaClass.superclass!!.superclass
+            val flingRunnableField = headerBehaviorType!!.getDeclaredField("mFlingRunnable")
+            val scrollerField = headerBehaviorType.getDeclaredField("mScroller")
+            flingRunnableField.isAccessible = true
+            scrollerField.isAccessible = true
+
+            val flingRunnable = flingRunnableField.get(this) as Runnable
+            val overScroller = scrollerField.get(this) as OverScroller
+            if (flingRunnable != null) {
+                coordinatorLayout.removeCallbacks(flingRunnable)
+                flingRunnableField.set(this, null)
+            }
+            if (overScroller != null && !overScroller.isFinished) {
+                overScroller.abortAnimation()
+            }
+        } catch (e: NoSuchFieldException) {
+            e.printStackTrace()
+        } catch (e: IllegalAccessException) {
+            e.printStackTrace()
+        }
+
+    }
 
 
     //start nested scroll
@@ -100,7 +159,7 @@ open class AppBarLayoutOverScrollViewBehavior(context: Context?, attrs: Attribut
         nestedScrollAxes: Int,
         type: Int
     ): Boolean {
-//        stopAppbarLayoutFling(child)
+        stopAppbarLayoutFling(child)
         isAnimate = true
         if (target is DisInterceptNestedScrollView){
             System.out.println("target is Linearlayout")

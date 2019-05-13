@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.example.zoomparallax.CustomeViews.CustomFlingScrollView
+<com.example.zoomparallax.CustomeViews.CustomeScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:background="#000"
+              android:background="#263238"
+        android:focusableInTouchMode="true"
+        android:id="@+id/content_2"
               app:layout_behavior="@string/appbar_scrolling_view_behavior">
     <LinearLayout android:layout_width="match_parent"
                   android:layout_height="wrap_content"
     android:orientation="vertical">
-        <View android:layout_width="match_parent" android:layout_height="50px"/>
+
         <View android:layout_width="match_parent" android:layout_height="2px"
               android:background="#fff"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                   android:text="A la une"
                   android:textColor="#fff"
+                  android:padding="20dp"
                   android:textSize="30dp"/>
         <View android:layout_width="match_parent" android:layout_height="20dp"/>
 
@@ -67,4 +70,4 @@
 
 
 
-</com.example.zoomparallax.CustomeViews.CustomFlingScrollView>
+</com.example.zoomparallax.CustomeViews.CustomeScrollView>

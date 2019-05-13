@@ -26,8 +26,11 @@ import kotlinx.android.synthetic.main.activity_scrolling.*
 import kotlinx.android.synthetic.main.content_scrolling.*
 import org.w3c.dom.Text
 import android.os.CountDownTimer
+import com.example.zoomparallax.CustomeViews.CustomeScrollView
 import com.example.zoomparallax.CustomeViews.DisInterceptNestedScrollView
 import kotlinx.android.synthetic.main.behaviorcontent.*
+
+
 
 
 //CollapsingToolbarLayout: the folding header
@@ -41,6 +44,7 @@ open class ScrollingActivity : AppCompatActivity() {
     private lateinit var titlebackup : View
     private lateinit var coordinatorLayout: CoordinatorLayout
     private lateinit var behavior_content : DisInterceptNestedScrollView
+    private lateinit var content : CustomeScrollView
 
     private var status = false
 
@@ -74,6 +78,8 @@ open class ScrollingActivity : AppCompatActivity() {
         initView()
         initListener()
 
+        content.getContent(content,appBarLayout)
+
 
 
 
@@ -100,6 +106,7 @@ open class ScrollingActivity : AppCompatActivity() {
 
 //================= listener for title alpha ====================
         appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+
             percent = Math.abs(verticalOffset).toFloat() / (appBarLayout.totalScrollRange.toFloat()/index)
 
             if (percent > 1f){
@@ -112,6 +119,7 @@ open class ScrollingActivity : AppCompatActivity() {
                 status = true
             }
         })
+
         val handler = Handler()
         val runnable: Runnable = object : Runnable {
             override fun run() {
@@ -137,6 +145,7 @@ open class ScrollingActivity : AppCompatActivity() {
         coordinatorLayout = findViewById(R.id.coor_layout)
         behavior_content = findViewById(R.id.content)
         titlebackup = findViewById(R.id.title_backup)
+        content = findViewById(R.id.content_2)
 
         val titleheight : Int = title.layoutParams.height
         val content_paddingTop = behavior_content.paddingTop

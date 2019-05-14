@@ -11,6 +11,12 @@ class DisInterceptNestedScrollView @JvmOverloads constructor(
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         parent.requestDisallowInterceptTouchEvent(true)
+        when(ev!!.action){
+            MotionEvent.ACTION_DOWN ->{
+                this.requestFocus()
+            }
+
+        }
         return super.dispatchTouchEvent(ev)
     }
 

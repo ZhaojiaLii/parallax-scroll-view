@@ -6,15 +6,19 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:background="#263238"
+
         android:focusableInTouchMode="true"
         android:id="@+id/content_2"
               app:layout_behavior="@string/appbar_scrolling_view_behavior">
     <LinearLayout android:layout_width="match_parent"
                   android:layout_height="wrap_content"
     android:orientation="vertical">
+        <View android:layout_width="match_parent" android:layout_height="100px"
+              android:background="#263238"/>
 
         <View android:layout_width="match_parent" android:layout_height="2px"
               android:background="#fff"/>
+
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                   android:text="A la une"
                   android:textColor="#fff"

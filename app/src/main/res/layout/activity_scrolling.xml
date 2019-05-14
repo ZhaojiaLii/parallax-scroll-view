@@ -42,6 +42,10 @@ android:orientation="vertical">
                 <include layout="@layout/behaviorlistcontent"/>
 
 
+
+                <!--<include layout="@layout/other_content"/>-->
+
+
                 <android.support.v7.widget.Toolbar
                         android:id="@+id/toolbar"
                         android:tag="toolbar"
@@ -77,8 +81,9 @@ android:orientation="vertical">
         </LinearLayout>
 
 
-
         <include layout="@layout/other_content"/>
+
+
 
     </android.support.design.widget.CoordinatorLayout>
 

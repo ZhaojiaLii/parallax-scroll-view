@@ -44,7 +44,6 @@ open class ScrollingActivity : AppCompatActivity() {
     private lateinit var titlebackup : View
     private lateinit var coordinatorLayout: CoordinatorLayout
     private lateinit var behavior_content : DisInterceptNestedScrollView
-    private lateinit var content : CustomeScrollView
 
     private var status = false
 
@@ -78,7 +77,6 @@ open class ScrollingActivity : AppCompatActivity() {
         initView()
         initListener()
 
-        content.getContent(content,appBarLayout)
 
 
 
@@ -145,7 +143,6 @@ open class ScrollingActivity : AppCompatActivity() {
         coordinatorLayout = findViewById(R.id.coor_layout)
         behavior_content = findViewById(R.id.content)
         titlebackup = findViewById(R.id.title_backup)
-        content = findViewById(R.id.content_2)
 
         val titleheight : Int = title.layoutParams.height
         val content_paddingTop = behavior_content.paddingTop

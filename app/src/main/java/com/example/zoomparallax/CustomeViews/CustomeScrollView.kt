@@ -61,13 +61,13 @@ open class CustomeScrollView @JvmOverloads constructor(
         parent.requestDisallowInterceptTouchEvent(true)
         when(ev!!.action){
             MotionEvent.ACTION_DOWN -> {
-                content.requestFocus()
-                val contentY = content.y
-                System.out.println("content Y is $contentY")
+                //content.requestFocus()
+                //val contentY = content.y
+                //System.out.println("content Y is $contentY")
 //                if (contentY != contentInitPosition){
 //                    return super.dispatchTouchEvent(ev)
 //                }
-                stopAppbarLayoutFling(appBarLayout)
+                //stopAppbarLayoutFling(appBarLayout)
 
             }
             MotionEvent.ACTION_MOVE -> {

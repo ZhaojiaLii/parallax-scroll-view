@@ -2,16 +2,18 @@
 <com.example.zoomparallax.CustomeViews.DisInterceptNestedScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="match_parent" xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/content"
-android:tag="headercontent">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+
+        android:tag="headercontent">
     <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="650dp"
+            android:layout_height="750dp"
             android:id="@+id/header_btns">
         <ImageView android:layout_width="250dp"
                    android:layout_height="200dp"
-                   android:layout_marginTop="200dp"
+                   android:layout_marginTop="300dp"
                    android:layout_gravity="center|top"
                    android:src="@drawable/avengerstitle"/>
         <TextView android:layout_width="wrap_content"
@@ -36,7 +38,7 @@ android:tag="headercontent">
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|center"
                 android:layout_marginRight="100dp"
-                android:layout_marginTop="400dp"
+                android:layout_marginTop="500dp"
                 android:orientation="vertical">
             <Button
                     android:layout_width="50dp"
@@ -58,7 +60,7 @@ android:tag="headercontent">
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|center"
-                android:layout_marginTop="390dp"
+                android:layout_marginTop="490dp"
                 android:orientation="vertical">
             <Button
                     android:layout_width="60dp"
@@ -81,7 +83,7 @@ android:tag="headercontent">
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|center"
                 android:layout_marginLeft="100dp"
-                android:layout_marginTop="400dp"
+                android:layout_marginTop="500dp"
                 android:orientation="vertical">
             <Button
                     android:layout_width="50dp"

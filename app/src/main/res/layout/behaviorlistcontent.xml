@@ -4,11 +4,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_marginTop="500dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_marginTop="600dp"
         android:id="@+id/content"
         android:tag="content">
-    <FrameLayout android:layout_width="match_parent"
-                 android:layout_height="wrap_content">
+    <LinearLayout android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+    android:orientation="vertical">
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -85,6 +87,7 @@
 
             </LinearLayout>
 
-    </FrameLayout>
+
+    </LinearLayout>
 
 </com.example.zoomparallax.CustomeViews.CustomFlingScrollView>
